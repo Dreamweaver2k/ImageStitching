@@ -56,15 +56,12 @@ def DetectBlobs(
         num_intervals=12,
         threshold=1e-4
 ):
-    # test = np.array([[4,5,2,1,2,3,2,1], [4,6,9,4,5,7,2,1], [2,1,9,8,9,4,2,9], [4,5,2,4,7,3,2,1], [4,5,9,3,2,3,2,1], [4,5,2,1,2,9,9,9], [4,5,2,1,2,3,2,1], [4,5,2,1,2,3,2,1]])
-    # test2 = ndimage.maximum_filter(test,size=3)
-    # print(test2 - test)
+    
     # Convert image to grayscale and convert it to double [0 1].
     if len(im.shape) > 2:
         im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) / 255
 
     # YOUR CODE STARTS HERE
-    # full_im = np.zeros((num_octaves*(num_intervals+1), np.size(im), np.size(im)))
     full_im = np.zeros((np.size(im[0]), np.size(im[0])))
     intermediate_im = np.zeros((np.size(im[0]), np.size(im[0])))
 
@@ -76,15 +73,6 @@ def DetectBlobs(
 
     laplacian_filter = laplacian(sigma, size)
 
-    """filters = np.zeros((num_intervals + 2, sigma * 3, size))
-    for i in range(0, num_intervals + 2):
-        k = pow(2, pow((1/num_intervals), i - 1))
-        filters[i] = gaussian(k * sigma, size)
-
-    for i in range(0, num_intervals + 1):
-        k = pow(2, pow((1 / num_intervals), i))
-        radii[i] = pow(2, 1 / 2) * sigma * k"""
-
     # apply filters for all intervals and octaves
     for i in range(0, num_octaves):
         resize_factor = 1 / (pow(2, i))
@@ -93,35 +81,8 @@ def DetectBlobs(
         dsize = (width, height)
         temp_im = cv2.resize(im, dsize)
         print(np.size(temp_im[0]))
-        """for j in range(0, num_intervals + 1):
-            # Perform two convolutions on adjacent filters
-            #convolution_1 = ndimage.convolve(temp_im, filters[j])
-            #convolution_2 = ndimage.convolve(temp_im, filters[j+1])
-            laplacian_convolution = ndimage.convolve(temp_im, )
-            # Compute square of difference of Gaussian
-            #DoG = convolution_1 - convolution_2
-
-            DoG = np.square(DoG)
-
-            filter = ndimage.maximum_filter(DoG, size=radii[j]*3)
-            filter = (DoG - filter)"""
-        """for x in range(0, np.size(DoG[0])):
-            for y in range(0, np.size(DoG[0])):
-                if filter[x][y] < 0:
-                    DoG[x][y] = 0"""
-
+ 
         # convert back to regular size
-        """resize_factor = pow(2, i)
-        width = int(resize_factor * np.size(temp_im[0]))
-        height = width
-        dsize = (width, height)
-        DoG = cv2.resize(DoG, dsize)
-
-        for x in range(0, np.size(DoG[0])):
-            for y in range(0, np.size(DoG[0])):
-                if DoG[x][y] >= intermediate_im[x][y]:
-                    intermediate_im[x][y] = DoG[x][y]
-                    #ref_radius[x][y] = radii[j] * pow(2,i)""""
     filter = ndimage.maximum_filter(intermediate_im, size=radii[1] * pow(2, i))
     filter = (intermediate_im - filter)
     for x in range(0, np.size(intermediate_im[0])):
@@ -141,31 +102,6 @@ for x in range(0, np.size(full_im[0])):
     for y in range(0, np.size(full_im[0])):
         if filter[x][y] < 0:
             full_im[x][y] = 0
-# full_im = full_im + (full_im - filter)
-# only_max = full_im - filter
-
-# ref_radius = np.zeros((np.size(im), np.size(image)))
-# cv2.imshow('convolved2', full_im)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
-# print(np.max(full_im))
-
-# im_final = np.zeros(np.size(im), np.size(im))
-# for i in range(0, radii):
-#    champ_index = 0
-#    champ_intensity = 0
-#    for x in range(0, np.size(im)):
-#        for y in range(0, np.size(im)):
-#            if full_im[i][x][y] > champ_intensity:
-#                champ_intensity = full_im[i][x][y]
-#                champ_index = i
-#    ref_radius[x][y] = radii[champ_index]
-#    im_final[x][y] = champ_intensity
-# print(full_im)
-# full_im = full_im/np.max(full_im)
-# cv2.imshow('maxFilter', full_im)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
 
 blob = np.where(full_im > threshold)
 # print(full_im)
@@ -203,50 +139,6 @@ def gaussian(sigma, size):
                 -1 * (pow(x - center, 2) + pow(y - center, 2)) / (2 * pow(sigma, 2)))
     return gaussian_filter
 
-
-# image = cv2.imread("C:\\Users\\Chand\\Documents\\Princeton\\FALL2020\\COS_429\\projects\\COS429HW1\\data\\butterfly.jpg")
-# DetectBlobs(image)
-"""im = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)/255
-threshold = 5e-4
-sigma = 2
-k1 = pow(pow(2,1/12),1/2)
-g1 = gaussian(sigma, int(sigma*6))
-k2 = pow(pow(2,1/12),1)
-g2 = gaussian(sigma*k2, int(k2*sigma*6))
-
-
-image = cv2.imread("C:\\Users\\Chand\\Documents\\Princeton\\FALL2020\\COS_429\\projects\\COS429HW1\\data\\butterfly.jpg")
-image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)/255
-
-convolved1 = ndimage.convolve(image, g1)
-#cv2.imshow('convolved',convolved1)
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()
-
-convolved2 = ndimage.convolve(image, g2)
-#cv2.imshow('convolved2',convolved2)
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()
-
-DoG = convolved1 - convolved2
-DoG = np.square(DoG)
-cv2.imshow('DoG',DoG)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-show(DoG)
-
-maxfilter = ndimage.maximum_filter(DoG, size=6)
-#show(maxfilter)
-#maxfilter = maxfilter/np.max(maxfilter)
-#maxfilter = np.round(maxfilter, decimals=0)
-blobs = np.where(maxfilter > threshold)
-#blobs = np.array([[image.shape[0] * 0.5, image.shape[1] * 0.5, 0.25 * min(image.shape[0], image.shape[1]), 1]])
-#blobs = np.vstack((blobs, [100,100,100,100]))
-
-#cv2.imshow('maxFilter',maxfilter)
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()"""
-
 # YOUR CODE STARTS HERE
 height, width = np.shape(im_right)[0:2]
 height = height * 2
@@ -255,23 +147,12 @@ dsize = (width, height)
 
 warped_imager = cv2.warpPerspective(im_right, np.linalg.inv(H), dsize)
 
-"""height, width = np.shape(im_left)[0:2]
-height = height
-width = width
-dsize = (width, height)
-warped_imagel = cv2.warpPerspective(im_left, H, dsize)"""
-
-# origin = np.dot(np.linalg.inv(H), toHomogeneous([0, 0, 1]))
-
-# origin= origin[0:2]/origin[2]
-
 show(im_left)
 show(warped_imager)
 
 new_image = np.empty((max(im_left.shape[0], warped_imager.shape[0]), im_left.shape[1] + warped_imager.shape[1]),
                      dtype=np.uint8)
 
-# height, width = np.shape(warped_image)
 top_left = np.dot(np.linalg.inv(H), toHomogeneous((0, 0)))
 top_left = top_left[0:2] / top_left[2]
 low_left = np.dot(np.linalg.inv(H), toHomogeneous((0, height)))
@@ -287,29 +168,12 @@ print(low_right)
 height, width = np.shape(warped_imager)[0:2]
 dsize = (width, height)
 translate_mat = translation()
-print(translate_mat)
-print(H)
+
 warped_imager = cv2.warpPerspective(warped_imager, translate_mat, dsize)
 
 new_image[:im_left.shape[0], :im_left.shape[1]] = im_left
 new_image[:warped_imager.shape[0], im_left.shape[1]:] = warped_imager
 height, width = warped_imager.shape
-print(warped_imager.shape[1])
-# new_image[min(int(low_left[1]), int(top_left[1])):max(int(low_left[1]), int(top_left[1])), min(int(low_left[0]), int(top_left[0])):max(int(low_right[0]), int(top_right[0]))] = warped_image
-# new_image = np.empty((max(im_left.shape[0], im_right.shape[0]), im_left.shape[1]+im_right.shape[1]), dtype=np.uint8)
-# new_image[:im_left.shape[0], :im_left.shape[1]] = im_left
-# new_image[:im_right.shape[0], im_left.shape[1]:] = im_right
-
-"""new_image = np.empty(
-    (max(im_left.shape[0], warped_imager.shape[0]), im_left.shape[1] + warped_imager.shape[1]),
-    dtype=np.uint8)
-new_image[:im_left.shape[0], :im_left.shape[1]] = im_left
-new_image[:warped_imager.shape[0], :warped_imager.shape[1]] = warped_imager"""
-
-"""new_image = np.empty((max(warped_imagel.shape[0], warped_imager.shape[0]), warped_imagel.shape[1] + warped_imager.shape[1]),
-                     dtype=np.uint8)
-new_image[:warped_imagel.shape[0], :warped_imagel.shape[1]] = warped_imagel
-new_image[:warped_imager.shape[0], :warped_imager.shape[1]] = warped_imager"""
 
 height, width = np.shape(im_right)[0:2]
 height = height * 2
@@ -340,36 +204,14 @@ print(translate_mat)
 H = np.dot(np.linalg.inv(H), translate_mat)
 
 warped_imager = cv2.warpPerspective(im_right, H, (im_left.shape[1] + im_right.shape[1], im_right.shape[0]))
-# warped_imager = cv2.warpPerspective(warped_imager, translate_mat, (warped_imager.shape[1], warped_imager.shape[0]))
-show(im_left)
-show(warped_imager)
 
-# height, width = np.shape(warped_image)
-
-
-print(H)
-# warped_imager = cv2.warpPerspective(warped_imager, translate_mat, (im_left.shape[1] + im_right.shape[1], im_left.shape[0]))
-show(warped_imager)
 new_image = np.empty((warped_imager.shape[1] + im_left.shape[1], warped_imager.shape[0]))
-show(new_image)
-# new_image[:warped_imager.shape[0], (-1) * int(top_left[1]) + im_left.shape[1]:-1 * int(top_left[1])] = warped_imager[,:im_left.shape[1]]
-# new_image[:warped_imager.shape[0], im_left.shape[1] - int(top_left[1]): new_image.shape[1]-int(top_left[1])] = warped_imager
-# new_image[:warped_imager.shape[0], 222:] = warped_imager
 
 new_image[:im_right.shape[0], :im_left.shape[1]] = im_left
-# new_image[int(top_left[0]):int(top_left[0]) + warped_imager.shape[0], im_left.shape[1] - int(top_left[1]):int(-1*top_left[1])] = warped_imager
-# new_image[int(top_left[0]):int(top_left[0])+warped_imager.shape[0], int(top_right[1]):warped_imager.shape[1]+int(1*top_right[1])] = warped_imager
-# new_image[:warped_imager.shape[0], im_left.shape[1]:] = warped_imager
-# new_image[:warped_imager.shape[0], int(top_right[1]) + 20:warped_imager.shape[1] + int(top_right[1]) + 20] = warped_imager
-# new_image[36:36+warped_imager.shape[0], int(top_right[1]) + 20:warped_imager.shape[1] + int(top_right[1]) + 20] = warped_imager
 
 plt.imshow(new_image)
 plt.show()
 height, width = warped_imager.shape
-print(warped_imager.shape[1])
-
-
-
 
 def warpImageWithMapping(im_left, im_right, H):
     print(H)
@@ -380,20 +222,6 @@ def warpImageWithMapping(im_left, im_right, H):
     warped_imager = cv2.warpPerspective(im_right, H, (im_right.shape[1] + im_left.shape[1], im_right.shape[0]))
     show(warped_imager)
     # YOUR CODE STARTS HERE
-    """hr, wr = im_right.shape
-    print(hr)
-    hl, wl = im_left.shape
-    print(hl)
-    h = min(hl,hr)
-
-    total_image = np.zeros((h, im_right.shape[1] + im_left.shape[1]))
-    total_image[:h,:im_left.shape[1]] = im_left[:h,:]
-    total_image[:h, im_left.shape[1]:] = im_right
-    show(total_image)
-    warped_imager = cv2.warpPerspective(total_image[:im_right.shape[0], im_left.shape[1]:], np.linalg.inv(H),
-                                        (total_image.shape[1], total_image.shape[0]))
-    show(warped_imager)"""
-
 
     height, width = np.shape(im_right)[0:2]
     top_left = np.dot(np.linalg.inv(H), toHomogeneous((0, 0)))
@@ -405,15 +233,9 @@ def warpImageWithMapping(im_left, im_right, H):
     low_right = np.dot(np.linalg.inv(H), toHomogeneous((width, height)))
     low_right = low_right[0:2] / low_right[2]
 
-    print(top_left)
-    print(top_right)
-    print(low_left)
-    print(low_right)
-
     xtranslate = min(low_right[0], low_left[0], top_right[0], top_left[0])
     ytranslate = min(low_right[1], low_left[1], top_right[1], top_left[1])
-    #xtranslate = im_left.shape[1] + xtranslate
-   # ytranslate = im_left.shape[0] + ytranslate
+
     x = max(top_right[0], low_right[0])
     y = max(top_left[1], top_right[1])
     x = x - im_left.shape[1]
@@ -616,10 +438,6 @@ while len(images) > 1:
 
 
 imCurrent = images[0]
-"""imCurrent = images[0]
-for im in images[1:]:
-    defaultH = np.array([[1,0,0], [0,1,0], [0,0,1]])
-    imCurrent = warpImageWithMapping(imCurrent, im, defaultH)"""
 
 cv2.imshow('Panorama', imCurrent)
 
@@ -721,7 +539,6 @@ def pickImages(images, keys, descriptors):
     image1 = 0
     image2 = 1
     remove = []
-    #champ_H = np.zeros((3,3))
     for i in range(0, len(images)-1):
         mm = 0
         for j in range(1, len(images)):
@@ -793,13 +610,6 @@ primary_desc = computeDescriptors(primary_image, primary_key)
 
 print('Putting images together...')
 primary_image = stitch(primary_image, primary_key, primary_desc, images, keys, descriptors)
-
-
-#imCurrent = images[0]
-"""imCurrent = images[0]
-for im in images[1:]:
-    defaultH = np.array([[1,0,0], [0,1,0], [0,0,1]])
-    imCurrent = warpImageWithMapping(imCurrent, im, defaultH)"""
 
 cv2.imshow('Panorama', primary_image)
 
